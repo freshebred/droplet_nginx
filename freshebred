@@ -1,0 +1,57 @@
+# 1. Page1.freshebred.page -> Port 3001
+server {
+    listen 443 ssl;
+    server_name page1.freshebred.page;
+    ssl_certificate /etc/letsencrypt/live/freshebred.page/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/freshebred.page/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:3001;
+        include proxy_params;
+    }
+}
+
+# 2. Page2.freshebred.page -> Port 3002
+server {
+    listen 443 ssl;
+    server_name page2.freshebred.page;
+    ssl_certificate /etc/letsencrypt/live/freshebred.page/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/freshebred.page/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:3002;
+        include proxy_params;
+    }
+}
+
+# 3. freshebred.page (Main) -> Port 3003
+server {
+    listen 443 ssl;
+    server_name freshebred.page;
+    ssl_certificate /etc/letsencrypt/live/freshebred.page/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/freshebred.page/privkey.pem;
+
+    location / {
+        proxy_pass http://localhost:3003;
+        include proxy_params;
+    }
+}
+
+# 4. Catch-all for UNASSIGNED subdomains -> 404 Error
+server {
+    listen 443 ssl;
+    server_name *.freshebred.page;
+    ssl_certificate /etc/letsencrypt/live/freshebred.page/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/freshebred.page/privkey.pem;
+
+    location / {
+        return 404 "Page not found - This subdomain is not assigned.";
+    }
+}
+
+# HTTP to HTTPS Redirect
+server {
+    listen 80;
+    server_name freshebred.page *.freshebred.page;
+    return 301 https://$host$request_uri;
+}
